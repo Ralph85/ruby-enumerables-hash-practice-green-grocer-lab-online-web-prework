@@ -12,45 +12,31 @@ return organized_cart
 end
 
 def apply_coupons(cart, coupons)
-  coupons.each do |coupon_hash|
-  fruit_name = coupon_hash[:item]
-  new_coupon_hash = {
-    :price => coupon_hash[:cost],
-    :clearance => "true",
-    :count => coupon_hash[:num]
-  }
+  hash = cart
+coupons.each do |coupon_hash|
+  # add coupon to cart
+  item = coupon_hash[:item]
 
-   if cart.key?(fruit_name)
-    new_coupon_hash[:clearance] = cart[fruit_name][:clearance]
-    if cart[fruit_name][:count]>= new_coupon_hash[:count]
-      new_coupon_hash[:count] = (cart[fruit_name][:count]/new_coupon_hash[:count]).floor
-      cart[fruit_name][:count] = (coupon_hash[:num])%(cart[fruit_name][:count])
+  if !hash[item].nil? && hash[item][:count] >= coupon_hash[:num]
+    temp = {"#{item} W/COUPON" => {
+      :price => coupon_hash[:cost],
+      :clearance => hash[item][:clearance],
+      :count => 1
+      }
+    }
+
+    if hash["#{item} W/COUPON"].nil?
+      hash.merge!(temp)
+    else
+      hash["#{item} W/COUPON"][:count] += 1
+      #hash["#{item} W/COUPON"][:price] += coupon_hash[:cost]
     end
-    cart[fruit_name + " W/COUPON"] = new_coupon_hash
+
+    hash[item][:count] -= coupon_hash[:num]
   end
-  end
-return cart
 end
-
-test_cart = {
-"AVOCADO" => {:price => 3.0, :clearance => true, :count => 4},
-"KALE"    => {:price => 3.0, :clearance => false, :count => 1}
-}
-
-test_coupon =
-[
-  {:item => "AVOCADO", :num => 2, :cost => 5.00},
-  {:item => "BEER", :num => 2, :cost => 20.00},
-  {:item => "CHEESE", :num => 3, :cost => 15.00}
-]
-
-result =
-{
-"AVOCADO" => {:price => 3.0, :clearance => true, :count => 2},
-"KALE"    => {:price => 3.0, :clearance => false, :count => 1}
-}
-
-apply_coupons(test_cart, test_coupon)
+hash
+end
 
 
 def apply_clearance(cart)
